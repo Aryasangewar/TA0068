@@ -35,11 +35,11 @@ const Login = () => {
         <div className="p-8 md:p-12">
           {/* Header */}
           <div className="text-center mb-10">
-             <div className="w-16 h-16 bg-primary rounded-[1.25rem] flex items-center justify-center text-white mx-auto shadow-xl shadow-indigo-100 mb-6">
-                <Activity className="w-8 h-8" />
-             </div>
-             <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Welcome Back</h1>
-             <p className="text-slate-500 mt-2 font-medium">Access your secure clinical workspace</p>
+            <div className="w-16 h-16 bg-primary rounded-[1.25rem] flex items-center justify-center text-white mx-auto shadow-xl shadow-indigo-100 mb-6">
+              <Activity className="w-8 h-8" />
+            </div>
+            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">Welcome Back</h1>
+            <p className="text-slate-500 mt-2 font-medium">Access your secure clinical workspace</p>
           </div>
 
           <form onSubmit={handleLogin} className="space-y-6">
@@ -102,14 +102,20 @@ const Login = () => {
             New to the network? <Link to="/signup" className="text-primary font-bold hover:underline">Register Port</Link>
           </p>
         </div>
-        
+
         {/* Footer Security Note */}
         <div className="px-8 py-5 bg-slate-50 border-t border-slate-100 flex items-center justify-center gap-2">
-           <ShieldCheck className="w-4 h-4 text-emerald-500" />
-           <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">End-to-End Encrypted Session</span>
+          <ShieldCheck className="w-4 h-4 text-emerald-500" />
+          <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">End-to-End Encrypted Session</span>
         </div>
       </div>
+<<<<<<< HEAD
       <p className="absolute bottom-8 text-[10px] font-black text-indigo-500/30 uppercase tracking-[0.2em] italic">Design and Developed by Mohsin,Wasif,Furqan,Arya,Tamanna</p>
+=======
+      <p className="absolute bottom-8 text-[10px] font-black text-indigo-500/30 uppercase tracking-[0.2em] italic">git fetch origin
+        git reset --hard origin/main
+        git clean -fd</p>
+>>>>>>> f1f6d611dc567711e8d76c771e8a5525b77bb374
     </div>
   );
 };
