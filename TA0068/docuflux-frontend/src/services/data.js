@@ -29,8 +29,8 @@ export const getPatientConsentRequests = async () => {
   return response.data;
 };
 
-export const approveConsent = async (id) => {
-  const response = await axios.put(`${API_URL}/consent/${id}/approve`, {}, getAuthHeader());
+export const approveConsent = async (id, allowedFields) => {
+  const response = await axios.put(`${API_URL}/consent/${id}/approve`, { allowedFields }, getAuthHeader());
   return response.data;
 };
 

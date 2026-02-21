@@ -36,12 +36,12 @@ app.use('/api/cases', require('./routes/cases'));
 const PORT = process.env.PORT || 5055;
 
 app.get('/', (req, res) => {
-    res.send('DocuFlux AI API is running... Version 2.7');
+    res.send('DocuFlux AI API is running... Version 2.6 (UNIQUE FILE)');
 });
 
 app.listen(PORT, () => {
-    console.log('>>> 🚀 DOCUFLUX BACKEND STARTING <<<');
-    console.log('>>> 🛠️  VERSION: 2.7 (OPENROUTER)');
+    console.log('>>> 🚀 DOCUFLUX BACKEND (UNIQUE FILE) STARTING <<<');
+    console.log('>>> 🛠️ VERSION: 2.6');
     console.log(`>>> 🌐 PORT: ${PORT}`);
     console.log('--- READY FOR AI PROCESSING ---');
 });

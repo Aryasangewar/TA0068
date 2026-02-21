@@ -15,6 +15,8 @@ const caseSchema = new mongoose.Schema({
         }],
         advice: String
     },
+    resolutionNotes: { type: String },
+    prescriptionImage: { type: String }, // Base64 String
     status: { type: String, enum: ['Active', 'Completed'], default: 'Active' },
 }, { timestamps: true });
 

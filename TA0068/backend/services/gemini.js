@@ -1,42 +1,91 @@
-const { GoogleGenerativeAI } = require("@google/generative-ai");
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-
 const formatMedicalData = async (transcript) => {
+    console.log("--- 🤖 OPENROUTER SERVICE: REQUEST START ---");
+    
+    const apiKey = process.env.OPENROUTER_API_KEY;
+    if (!apiKey) {
+        console.error("❌ CRITICAL: OPENROUTER_API_KEY IS MISSING");
+        throw new Error("OPENROUTER_API_KEY is not configured in .env");
+    }
+
+    console.log("--- 📝 TRANSCRIPT RECEIVED ---");
+    console.log(transcript);
+
     try {
-        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        console.log("--- 📝 SENDING REQUEST TO OPENROUTER ---");
+        
+        const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${apiKey}`,
+                "HTTP-Referer": "http://localhost:5055", // Required by OpenRouter
+                "X-Title": "DocuFlux AI", // Optional but good practice
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                "model": "google/gemini-2.0-flash-001",
+                "messages": [
+                    {
+                        "role": "system",
+                        "content": "You are a medical documentation assistant. Extract structured medical data from the transcript. Ignore greetings and small talk. Return ONLY valid JSON in the specified format. No markdown, no conversational text."
+                    },
+                    {
+                        "role": "user",
+                        "content": `Extract structured medical data from this transcript. Return ONLY valid JSON in this format:
+{
+  "symptoms": [],
+  "diagnosis": "",
+  "medicines": [
+    {
+      "name": "",
+      "dosage": "",
+      "frequency": "",
+      "duration": ""
+    }
+  ],
+  "advice": ""
+}
 
-        const prompt = `
-        You are a medical scribe assistant. Convert the following medical consultation transcript into a structured JSON format.
+Transcript:
+${transcript}`
+                    }
+                ]
+            })
+        });
+
+        const data = await response.json();
         
-        Transcript: "${transcript}"
-        
-        Strict JSON format:
-        {
-          "symptoms": ["list of symptoms"],
-          "diagnosis": "brief diagnosis",
-          "medicines": [
-            { "name": "medicine name", "dosage": "dosage", "frequency": "frequency", "duration": "duration" }
-          ],
-          "advice": "general advice for the patient"
+        if (!response.ok) {
+            console.error("--- ❌ OPENROUTER API ERROR ---");
+            console.error(JSON.stringify(data, null, 2));
+            throw new Error(data.error?.message || "OpenRouter API request failed");
         }
-        
-        Only return the JSON object, nothing else.
-        `;
 
-        const result = await model.generateContent(prompt);
-        const response = await result.response;
-        const text = response.text();
+        const rawText = data.choices[0].message.content;
+        console.log("--- 📥 RAW AI RESPONSE ---");
+        console.log(rawText);
+
+        // Robust cleanup for markdown and accidental text
+        let cleanText = rawText.replace(/```json/g, "").replace(/```/g, "").trim();
         
-        // Basic cleaning to ensure only JSON is parsed
-        const jsonStart = text.indexOf('{');
-        const jsonEnd = text.lastIndexOf('}') + 1;
-        const jsonString = text.substring(jsonStart, jsonEnd);
+        // Find the first { and last } to ensure we only parse the JSON block
+        const start = cleanText.indexOf('{');
+        const end = cleanText.lastIndexOf('}') + 1;
+        if (start === -1 || end === 0) {
+            throw new Error("AI response did not contain a valid JSON object");
+        }
+        cleanText = cleanText.substring(start, end);
+
+        console.log("--- 🧹 CLEANED JSON STRING ---");
+        console.log(cleanText);
+
+        const parsedData = JSON.parse(cleanText);
+        console.log("--- ✅ PARSED DATA SUCCESS ---");
         
-        return JSON.parse(jsonString);
+        return parsedData;
     } catch (error) {
-        console.error("Gemini Error:", error);
-        throw new Error("Failed to process transcript with AI");
+        console.error("--- ❌ OPENROUTER SERVICE ERROR ---");
+        console.error("Error Message:", error.message);
+        throw error;
     }
 };
 
