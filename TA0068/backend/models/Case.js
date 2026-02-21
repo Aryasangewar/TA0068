@@ -18,4 +18,7 @@ const caseSchema = new mongoose.Schema({
     status: { type: String, enum: ['Active', 'Completed'], default: 'Active' },
 }, { timestamps: true });
 
+caseSchema.index({ patientId: 1 });
+caseSchema.index({ doctorId: 1 });
+
 module.exports = mongoose.model('Case', caseSchema);

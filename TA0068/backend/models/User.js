@@ -6,13 +6,17 @@ const userSchema = new mongoose.Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     role: { type: String, enum: ['Doctor', 'Patient'], required: true },
+    // Optional Patient Fields
+    gender: { type: String },
+    dateOfBirth: { type: Date },
+    bloodGroup: { type: String },
+    phoneNumber: { type: String }
 }, { timestamps: true });
 
-userSchema.pre('save', async function (next) {
-    if (!this.isModified('password')) return next();
+userSchema.pre('save', async function () {
+    if (!this.isModified('password')) return;
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
-    next();
 });
 
 userSchema.methods.matchPassword = async function (enteredPassword) {

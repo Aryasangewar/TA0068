@@ -11,7 +11,7 @@ function App() {
   const user = JSON.parse(localStorage.getItem('userInfo'));
 
   return (
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
       <div className="min-h-screen bg-slate-50 text-slate-900">
         <Navbar />
         <main className="container mx-auto px-4 py-8">

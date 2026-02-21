@@ -22,6 +22,7 @@ const Signup = () => {
     e.preventDefault();
     setError('');
     setLoading(true);
+    console.log('Signup Attempt Data:', formData);
     try {
       await signup(formData);
       window.location.href = '/';
