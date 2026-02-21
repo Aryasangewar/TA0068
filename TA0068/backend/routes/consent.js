@@ -4,19 +4,48 @@ const mongoose = require('mongoose');
 const { protect } = require('../middleware/authMiddleware');
 const { authorize } = require('../middleware/roleMiddleware');
 const Consent = require('../models/Consent');
+const User = require('../models/User');
 
 // @desc    Doctor requests consent from patient
 // @route   POST /api/consent/request
 router.post('/request', protect, authorize('Doctor'), async (req, res) => {
     try {
-        const { patientId } = req.body;
+        let { patientId } = req.body;
+        let actualPatientId = patientId;
 
-        if (!mongoose.Types.ObjectId.isValid(patientId)) {
-            return res.status(400).json({ message: "Invalid patient ID" });
+        // Clean patientId if it starts with #
+        if (typeof patientId === 'string') {
+            patientId = patientId.trim().replace(/^#/, '');
+        }
+
+        // Support short ID (last 6 chars)
+        if (patientId.length === 6) {
+            console.log(`Searching for patient with short ID suffix: ${patientId}`);
+            const user = await User.findOne({ 
+                $expr: {
+                    $and: [
+                        { $eq: ["$role", "Patient"] },
+                        { $regexMatch: {
+                            input: { $toString: "$_id" },
+                            regex: patientId + "$",
+                            options: "i"
+                        }}
+                    ]
+                }
+            });
+            
+            if (!user) {
+                return res.status(404).json({ message: "Patient not found with this short ID" });
+            }
+            actualPatientId = user._id;
+        } else {
+            if (!mongoose.Types.ObjectId.isValid(patientId)) {
+                return res.status(400).json({ message: "Invalid patient ID format" });
+            }
         }
 
         const consent = await Consent.create({
-            patientId,
+            patientId: actualPatientId,
             doctorId: req.user._id,
             status: 'Pending'
         });
