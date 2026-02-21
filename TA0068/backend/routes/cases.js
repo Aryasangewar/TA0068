@@ -43,7 +43,7 @@ router.post('/', protect, authorize('Doctor'), async (req, res) => {
         });
 
         if (!consent) {
-            return res.status(403).json({ message: 'No valid patient consent found or consent has expired' });
+            return res.status(403).json({ message: 'No valid patient consent found or consent has expired. Please request a new clinical handshake.' });
         }
 
         const newCase = await Case.create({
@@ -51,9 +51,9 @@ router.post('/', protect, authorize('Doctor'), async (req, res) => {
             doctorId: req.user._id,
             transcript,
             structuredData,
-            resolutionNotes,
-            prescriptionImage,
-            status: 'Completed'
+            resolutionNotes: resolutionNotes || '',
+            prescriptionImage: prescriptionImage || '',
+            status: 'Active' // Start as Active so doctor can finalize
         });
 
         res.status(201).json(newCase);
@@ -78,18 +78,28 @@ router.get('/', protect, async (req, res) => {
                     status: 'Approved'
                 });
 
-                if (!consent) return c; // Fallback if no specific consent found (legacy)
+                if (!consent) {
+                    // Safety: if no active approval, return empty data node
+                    return {
+                        _id: c._id,
+                        patientId: c.patientId,
+                        doctorId: c.doctorId,
+                        status: c.status,
+                        createdAt: c.createdAt,
+                        structuredData: { symptoms: [], diagnosis: 'RESTRICTED', medicines: [], advice: 'RESTRICTED' },
+                        resolutionNotes: 'RESTRICTED',
+                        prescriptionImage: null
+                    };
+                }
 
                 const caseObj = c.toObject();
                 const allowed = consent.allowedFields || [];
 
-                // Always exclude transcript from doctor history view for privacy if requested, 
-                // but here we follow the allowedFields logic
-                if (!allowed.includes('diagnosis')) delete caseObj.structuredData.diagnosis;
-                if (!allowed.includes('medicines')) delete caseObj.structuredData.medicines;
-                if (!allowed.includes('advice')) delete caseObj.structuredData.advice;
+                if (!allowed.includes('diagnosis')) caseObj.structuredData.diagnosis = 'RESTRICTED';
+                if (!allowed.includes('medicines')) caseObj.structuredData.medicines = [];
+                if (!allowed.includes('advice')) caseObj.structuredData.advice = 'RESTRICTED';
                 if (!allowed.includes('prescriptionImage')) delete caseObj.prescriptionImage;
-                if (!allowed.includes('resolutionNotes')) delete caseObj.resolutionNotes;
+                if (!allowed.includes('resolutionNotes')) caseObj.resolutionNotes = 'RESTRICTED';
 
                 return caseObj;
             }));
@@ -100,6 +110,30 @@ router.get('/', protect, async (req, res) => {
             cases = await Case.find({ patientId: req.user._id }).populate('doctorId', 'name email').sort({ createdAt: -1 });
         }
         res.json(cases);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// @desc    Update case status (Mark as Completed)
+// @route   PUT /api/cases/:id/status
+router.put('/:id/status', protect, authorize('Doctor'), async (req, res) => {
+    try {
+        const { status } = req.body;
+        const medicalCase = await Case.findById(req.params.id);
+
+        if (!medicalCase) {
+            return res.status(404).json({ message: 'Case not found' });
+        }
+
+        if (medicalCase.doctorId.toString() !== req.user._id.toString()) {
+            return res.status(401).json({ message: 'Not authorized' });
+        }
+
+        medicalCase.status = status || 'Completed';
+        await medicalCase.save();
+
+        res.json(medicalCase);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

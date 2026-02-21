@@ -126,7 +126,7 @@ const DoctorProfile = () => {
       </section>
 
       <footer className="mt-20 pt-10 border-t border-slate-200 text-center pb-10">
-         <p className="text-[10px] font-black text-indigo-500/30 uppercase tracking-[0.2em] italic">Design and Developed by Mohsin</p>
+         <p className="text-[10px] font-black text-indigo-500/30 uppercase tracking-[0.2em] italic">Design and Developed by Mohsin,Wasif,Furqan,Arya,Tamanna</p>
       </footer>
     </div>
   );

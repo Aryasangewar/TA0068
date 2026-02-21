@@ -38,3 +38,8 @@ export const requestConsent = async (patientId) => {
   const response = await axios.post(`${API_URL}/consent/request`, { patientId }, getAuthHeader());
   return response.data;
 };
+
+export const updateCaseStatus = async (id, status) => {
+  const response = await axios.put(`${API_URL}/cases/${id}/status`, { status }, getAuthHeader());
+  return response.data;
+};

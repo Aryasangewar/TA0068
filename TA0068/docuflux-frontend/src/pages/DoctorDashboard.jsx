@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ScribeFlow from '../components/ScribeFlow';
-import { getCases } from '../services/data';
+import { getCases, updateCaseStatus } from '../services/data';
 import { 
   Users, 
   PlusCircle, 
@@ -43,6 +43,15 @@ const DoctorDashboard = () => {
       console.error('Failed to fetch cases');
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleMarkComplete = async (id) => {
+    try {
+      await updateCaseStatus(id, 'Completed');
+      fetchCases();
+    } catch (err) {
+      alert('Failed to update case status');
     }
   };
 
@@ -212,8 +221,16 @@ const DoctorDashboard = () => {
                                     {c.status}
                                   </span>
                                </td>
-                               <td className="px-8 py-5 text-right opacity-0 group-hover:opacity-100 transition">
-                                  <button className="text-slate-400 hover:text-primary">
+                               <td className="px-8 py-5 text-right opacity-0 group-hover:opacity-100 transition whitespace-nowrap space-x-2">
+                                  {c.status === 'Active' && (
+                                    <button 
+                                      onClick={() => handleMarkComplete(c._id)}
+                                      className="text-[10px] font-black uppercase text-teal-600 bg-teal-50 px-3 py-1.5 rounded-lg border border-teal-100 hover:bg-teal-600 hover:text-white transition"
+                                    >
+                                      Finalize
+                                    </button>
+                                  )}
+                                  <button className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition">
                                      <ArrowUpRight className="w-5 h-5" />
                                   </button>
                                </td>
@@ -247,7 +264,7 @@ const DoctorDashboard = () => {
         )}
 
         <footer className="mt-20 pt-10 border-t border-slate-200 text-center pb-10">
-           <p className="text-[10px] font-black text-indigo-500/30 uppercase tracking-[0.2em] italic">Design and Developed by Mohsin</p>
+           <p className="text-[10px] font-black text-indigo-500/30 uppercase tracking-[0.2em] italic">Design and Developed by Mohsin,Wasif,Furqan,Arya,Tamanna</p>
         </footer>
       </main>
     </div>

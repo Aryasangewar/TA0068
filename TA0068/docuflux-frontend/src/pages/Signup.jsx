@@ -102,7 +102,7 @@ const Signup = () => {
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Distributed Ledger Verified Registration</span>
                 </div>
             </div>
-            <p className="absolute bottom-8 text-[10px] font-black text-indigo-500/30 uppercase tracking-[0.2em] italic">Design and Developed by Mohsin</p>
+            <p className="absolute bottom-8 text-[10px] font-black text-indigo-500/30 uppercase tracking-[0.2em] italic">Design and Developed by Mohsin,Wasif,Furqan,Arya,Tamanna</p>
         </div>
     );
 };

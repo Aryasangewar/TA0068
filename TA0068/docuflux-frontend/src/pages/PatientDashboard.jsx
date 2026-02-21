@@ -106,7 +106,7 @@ const PatientDashboard = () => {
           <div className="flex items-center gap-4 bg-white p-4 rounded-3xl border border-slate-100 shadow-2xl shadow-slate-200/40">
              <div className="text-right">
                 <p className="text-[10px] font-black text-slate-300 uppercase tracking-widest">Authorized Peers</p>
-                <p className="text-sm font-bold text-slate-900">2 Active Connections</p>
+                <p className="text-sm font-bold text-slate-900">{requests.filter(r => r.status === 'Approved').length} Active Connections</p>
              </div>
              <div className="w-10 h-10 bg-slate-50 rounded-2xl flex items-center justify-center text-indigo-600">
                 <Shield className="w-6 h-6 border border-indigo-100 rounded-lg p-1" />
@@ -263,7 +263,7 @@ const PatientDashboard = () => {
         </div>
       )}
       <footer className="mt-20 pt-10 border-t border-slate-200 text-center pb-10">
-         <p className="text-[10px] font-black text-indigo-500/30 uppercase tracking-[0.2em] italic">Design and Developed by Mohsin</p>
+         <p className="text-[10px] font-black text-indigo-500/30 uppercase tracking-[0.2em] italic">Design and Developed by Mohsin,Wasif,Furqan,Arya,Tamanna</p>
       </footer>
     </div>
   );

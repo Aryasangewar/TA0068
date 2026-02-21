@@ -158,7 +158,7 @@ const Landing = () => {
                <a href="#" className="hover:text-white transition">Security</a>
             </div>
             <p className="text-[10px] font-bold text-slate-700 uppercase tracking-[0.4em] mb-4">© 2026 DocuFlux Health Systems • HIPAA Simulation</p>
-            <p className="text-[10px] font-black text-indigo-500/50 uppercase tracking-[0.2em] italic">Design and Developed by Mohsin</p>
+            <p className="text-[10px] font-black text-indigo-500/50 uppercase tracking-[0.2em] italic">Design and Developed by Mohsin,Wasif,Furqan,Arya,Tamanna</p>
          </div>
       </footer>
     </div>
