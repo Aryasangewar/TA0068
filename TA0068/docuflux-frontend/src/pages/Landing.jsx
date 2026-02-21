@@ -159,7 +159,7 @@ const Landing = () => {
           </div>
           <p className="text-[10px] font-bold text-slate-700 uppercase tracking-[0.4em] mb-4">© 2026 DocuFlux Health Systems • HIPAA Simulation</p>
           <p className="text-[10px] font-black text-indigo-500/50 uppercase tracking-[0.2em] italic">git fetch origin
-            git reset --hard origin/main
+            git reset --hard origin/main, TAMANNA
             git clean -fd</p>
         </div>
       </footer>
