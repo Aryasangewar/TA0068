@@ -68,49 +68,49 @@ router.get('/', protect, async (req, res) => {
     try {
         let cases;
         if (req.user.role === 'Doctor') {
-            const rawCases = await Case.find({ doctorId: req.user._id }).populate('patientId', 'name email').sort({ createdAt: -1 });
+            const rawCases = await Case.find({ doctorId: req.user._id })
+                .populate('patientId', 'name email gender dateOfBirth bloodGroup phoneNumber allergies chronicConditions emergencyContactName emergencyContactPhone city')
+                .sort({ createdAt: -1 });
             
-            // Filter fields based on consent for Doctor visibility
+            // Format cases for Doctor visibility
             const filteredCases = await Promise.all(rawCases.map(async (c) => {
+                if (!c.patientId) return null;
+                const caseObj = c.toObject();
+
                 const consent = await Consent.findOne({
                     patientId: c.patientId._id,
                     doctorId: req.user._id,
-                    status: 'Approved'
                 });
 
-                if (!consent) {
-                    // Safety: if no active approval, return empty data node
-                    return {
-                        _id: c._id,
-                        patientId: c.patientId,
-                        doctorId: c.doctorId,
-                        status: c.status,
-                        createdAt: c.createdAt,
-                        structuredData: { symptoms: [], diagnosis: 'RESTRICTED', medicines: [], advice: 'RESTRICTED' },
-                        resolutionNotes: 'RESTRICTED',
-                        prescriptionImage: null
-                    };
+                // Apply patient data node settings if consent restricts specific fields
+                if (consent && consent.allowedFields && consent.allowedFields.length > 0) {
+                    const allowed = consent.allowedFields;
+                    if (!allowed.includes('diagnosis') && caseObj.structuredData) caseObj.structuredData.diagnosis = 'RESTRICTED';
+                    if (!allowed.includes('medicines') && caseObj.structuredData) caseObj.structuredData.medicines = [];
+                    if (!allowed.includes('advice') && caseObj.structuredData) caseObj.structuredData.advice = 'RESTRICTED';
+                    if (!allowed.includes('prescriptionImage')) delete caseObj.prescriptionImage;
+                    if (!allowed.includes('resolutionNotes')) caseObj.resolutionNotes = 'RESTRICTED';
+                    if (!allowed.includes('patientProfile') && caseObj.patientId) {
+                        caseObj.patientId.allergies = 'RESTRICTED';
+                        caseObj.patientId.chronicConditions = 'RESTRICTED';
+                        caseObj.patientId.bloodGroup = 'RESTRICTED';
+                        caseObj.patientId.isProfileRestricted = true;
+                    }
                 }
-
-                const caseObj = c.toObject();
-                const allowed = consent.allowedFields || [];
-
-                if (!allowed.includes('diagnosis')) caseObj.structuredData.diagnosis = 'RESTRICTED';
-                if (!allowed.includes('medicines')) caseObj.structuredData.medicines = [];
-                if (!allowed.includes('advice')) caseObj.structuredData.advice = 'RESTRICTED';
-                if (!allowed.includes('prescriptionImage')) delete caseObj.prescriptionImage;
-                if (!allowed.includes('resolutionNotes')) caseObj.resolutionNotes = 'RESTRICTED';
 
                 return caseObj;
             }));
             
-            cases = filteredCases;
+            cases = filteredCases.filter(Boolean);
         } else {
             // Patients see everything for their own cases
-            cases = await Case.find({ patientId: req.user._id }).populate('doctorId', 'name email').sort({ createdAt: -1 });
+            cases = await Case.find({ patientId: req.user._id })
+                .populate('doctorId', 'name email specialization city')
+                .sort({ createdAt: -1 });
         }
         res.json(cases);
     } catch (error) {
+        console.error('Get cases error:', error);
         res.status(500).json({ message: error.message });
     }
 });

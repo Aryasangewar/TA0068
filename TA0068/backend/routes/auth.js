@@ -12,7 +12,7 @@ const generateToken = (id) => {
 router.post('/signup', async (req, res) => {
     try {
         console.log('Signup Request Body:', req.body);
-        const { name, email, password, role } = req.body;
+        const { name, email, password, role, specialization, city } = req.body;
 
         if (!name || !email || !password || !role) {
             console.log('Validation Failed: Missing fields');
@@ -25,7 +25,14 @@ router.post('/signup', async (req, res) => {
             return res.status(400).json({ message: 'User already exists' });
         }
 
-        const user = await User.create({ name, email, password, role });
+        const user = await User.create({
+            name,
+            email,
+            password,
+            role,
+            specialization: specialization || '',
+            city: city || '',
+        });
 
         if (user) {
             res.status(201).json({
@@ -33,6 +40,8 @@ router.post('/signup', async (req, res) => {
                 name: user.name,
                 email: user.email,
                 role: user.role,
+                city: user.city || '',
+                specialization: user.specialization || '',
                 token: generateToken(user._id),
             });
         } else {
@@ -48,16 +57,29 @@ router.post('/signup', async (req, res) => {
 // @route   POST /api/auth/login
 router.post('/login', async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const { email, password, specialization } = req.body;
 
         const user = await User.findOne({ email });
 
         if (user && (await user.matchPassword(password))) {
+            // If doctor specified or updated their specialization on login, persist it
+            if (user.role === 'Doctor' && specialization && specialization.trim()) {
+                user.specialization = specialization.trim();
+                await user.save();
+            }
+
             res.json({
                 _id: user._id,
                 name: user.name,
                 email: user.email,
                 role: user.role,
+                city: user.city || '',
+                specialization: user.specialization || '',
+                bio: user.bio || '',
+                qualifications: user.qualifications || '',
+                experience: user.experience || '',
+                hospital: user.hospital || '',
+                license: user.license || '',
                 token: generateToken(user._id),
             });
         } else {

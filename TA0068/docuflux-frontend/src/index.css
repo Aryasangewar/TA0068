@@ -7,21 +7,21 @@
 :root {
   --font-inter: 'Inter', sans-serif;
   --font-outfit: 'Outfit', sans-serif;
-  
+
   /* Brand Identity - Deep Tech Medical */
   --brand-primary: #4F46E5;      /* Vital Indigo */
   --brand-primary-light: #818CF8;
   --brand-secondary: #0D9488;    /* Precision Teal */
   --brand-accent: #F43F5E;       /* Urgent Rose */
-  
+
   --bg-main: #FFFFFF;
   --bg-soft: #F8FAFC;
   --bg-muted: #F1F5F9;
-  
+
   --text-heavy: #0F172A;
   --text-main: #334155;
   --text-light: #64748B;
-  
+
   --border-subtle: #E2E8F0;
   --border-glow: rgba(79, 70, 229, 0.1);
 }
@@ -36,7 +36,9 @@ h1, h2, h3, h4 {
   @apply tracking-tighter;
 }
 
-/* Custom UI Components */
+/* Color shortcuts handled by Tailwind config (primary, secondary, primary-dark) */
+
+/* ─── UI Components ─────────────────────────────────────────────────────────── */
 .medical-card {
   @apply bg-white border border-slate-100 rounded-[2rem] p-8 transition-all duration-300;
   box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.05), 0 2px 4px -2px rgb(0 0 0 / 0.05);
@@ -48,16 +50,20 @@ h1, h2, h3, h4 {
 }
 
 .btn-primary {
-  @apply px-8 py-4 bg-indigo-600 text-white rounded-2xl font-bold flex items-center justify-center gap-2 
+  @apply px-8 py-4 bg-indigo-600 text-white rounded-2xl font-bold flex items-center justify-center gap-2
          transition-all hover:bg-indigo-700 hover:shadow-xl hover:shadow-indigo-100 active:scale-[0.98];
 }
 
 .btn-secondary {
-  @apply px-8 py-4 bg-white border border-slate-200 text-slate-700 rounded-2xl font-bold flex items-center justify-center gap-2 
+  @apply px-8 py-4 bg-white border border-slate-200 text-slate-700 rounded-2xl font-bold flex items-center justify-center gap-2
          transition-all hover:bg-slate-50 hover:border-slate-300 active:scale-[0.98];
 }
 
-/* Gradients & Masks */
+.premium-shadow {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.08), 0 10px 20px -8px rgba(79, 70, 229, 0.05);
+}
+
+/* ─── Gradients & Effects ───────────────────────────────────────────────────── */
 .glass-panel {
   @apply bg-white/80 backdrop-blur-xl border border-white/20;
 }
@@ -70,16 +76,48 @@ h1, h2, h3, h4 {
   filter: drop-shadow(0 0 20px rgba(79, 70, 229, 0.15));
 }
 
-/* Animations */
+/* ─── Animations ────────────────────────────────────────────────────────────── */
 @keyframes slideUp {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUpFade {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25%       { transform: translateX(-6px); }
+  75%       { transform: translateX(6px); }
 }
 
 .animate-slide-up {
-  animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: slideUp 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
-.delay-200 { animation-delay: 0.2s; }
-.delay-400 { animation-delay: 0.4s; }
-.delay-600 { animation-delay: 0.6s; }
+.animate-fade-in {
+  animation: fadeIn 0.5s ease both;
+}
+
+.animate-slide-up-fade {
+  animation: slideUpFade 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.animate-shake {
+  animation: shake 0.4s ease;
+}
+
+/* Animation delays */
+.delay-200  { animation-delay: 0.2s; }
+.delay-400  { animation-delay: 0.4s; }
+.delay-600  { animation-delay: 0.6s; }
+.delay-1    { animation-delay: 0.1s; }
+.delay-2    { animation-delay: 0.2s; }
+.delay-3    { animation-delay: 0.3s; }

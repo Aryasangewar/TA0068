@@ -1,13 +1,15 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
-import { Activity, Mail, Lock, User, UserCheck, Loader2, ArrowRight, ShieldCheck, HeartPulse } from 'lucide-react';
+import { Activity, Mail, Lock, User, Loader2, ArrowRight, ShieldCheck, HeartPulse } from 'lucide-react';
 
-const Signup = () => {
+const Signup = ({ onAuth }) => {
     const [name, setName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [role, setRole] = useState('Doctor');
+    const [specialization, setSpecialization] = useState('General Physician');
+    const [city, setCity] = useState('');
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
     const navigate = useNavigate();
@@ -17,9 +19,20 @@ const Signup = () => {
         setLoading(true);
         setError('');
         try {
-            const response = await axios.post('/api/auth/signup', { name, email, password, role });
-            localStorage.setItem('userInfo', JSON.stringify(response.data));
-            window.location.href = '/dashboard';
+            const response = await axios.post('/api/auth/signup', {
+                name,
+                email,
+                password,
+                role,
+                specialization: role === 'Doctor' ? specialization : '',
+                city,
+            });
+            // Store in sessionStorage — each tab is an independent session
+            sessionStorage.setItem('userInfo', JSON.stringify(response.data));
+            // Notify App component
+            window.dispatchEvent(new Event('auth-change'));
+            if (onAuth) onAuth();
+            navigate('/dashboard', { replace: true });
         } catch (err) {
             setError(err.response?.data?.message || 'Registration failed. Please try again.');
         } finally {
@@ -28,7 +41,7 @@ const Signup = () => {
     };
 
     return (
-        <div className="min-h-[calc(100vh-64px)] flex items-center justify-center px-4 py-12 bg-slate-50 relative overflow-hidden">
+        <div className="min-h-[calc(100vh-80px)] flex items-center justify-center px-4 py-12 bg-slate-50 relative overflow-hidden">
             {/* Decorative Elements */}
             <div className="absolute top-[10%] right-[10%] w-64 h-64 bg-primary/5 rounded-full blur-3xl animate-pulse" />
             <div className="absolute bottom-[10%] left-[10%] w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl animate-pulse" />
@@ -65,15 +78,56 @@ const Signup = () => {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <InputField label="Full Name" icon={<User className="w-5 h-5" />} value={name} onChange={(e) => setName(e.target.value)} placeholder="Dr. John Doe" />
+                            <InputField label="Full Name" icon={<User className="w-5 h-5" />} value={name} onChange={(e) => setName(e.target.value)} placeholder={role === 'Doctor' ? 'Dr. John Doe' : 'Jane Smith'} />
                             <InputField label="Email Address" icon={<Mail className="w-5 h-5" />} value={email} onChange={(e) => setEmail(e.target.value)} placeholder="john@hospital.com" type="email" />
+                        </div>
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            {role === 'Doctor' ? (
+                                <div className="space-y-2">
+                                    <label className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-1">Specialization</label>
+                                    <select
+                                        className="w-full px-4 py-4 bg-slate-50 border border-slate-100 rounded-2xl focus:ring-4 focus:ring-primary/5 focus:border-primary outline-none transition text-slate-900 font-medium"
+                                        value={specialization}
+                                        onChange={(e) => setSpecialization(e.target.value)}
+                                    >
+                                        <option value="General Physician">General Physician</option>
+                                        <option value="Cardiologist">Cardiologist</option>
+                                        <option value="Dermatologist">Dermatologist</option>
+                                        <option value="Neurologist">Neurologist</option>
+                                        <option value="Orthopedist">Orthopedist</option>
+                                        <option value="Pediatrician">Pediatrician</option>
+                                        <option value="Psychiatrist">Psychiatrist</option>
+                                        <option value="ENT Specialist">ENT Specialist</option>
+                                        <option value="Ophthalmologist">Ophthalmologist</option>
+                                        <option value="Gastroenterologist">Gastroenterologist</option>
+                                        <option value="Pulmonologist">Pulmonologist</option>
+                                        <option value="Gynecologist">Gynecologist</option>
+                                        <option value="Endocrinologist">Endocrinologist</option>
+                                        <option value="Nephrologist">Nephrologist</option>
+                                        <option value="Dentist">Dentist</option>
+                                        <option value="Oncologist">Oncologist</option>
+                                    </select>
+                                </div>
+                            ) : null}
+
+                            <div className={`space-y-2 ${role !== 'Doctor' ? 'md:col-span-2' : ''}`}>
+                                <InputField
+                                    label="City / Location"
+                                    icon={<Activity className="w-5 h-5" />}
+                                    value={city}
+                                    onChange={(e) => setCity(e.target.value)}
+                                    placeholder="e.g. New York, Karachi, London"
+                                    required={false}
+                                />
+                            </div>
                         </div>
 
                         <InputField label="Secure Password" icon={<Lock className="w-5 h-5" />} value={password} onChange={(e) => setPassword(e.target.value)} placeholder="••••••••" type="password" />
 
                         {error && (
-                            <div className="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3">
-                                <div className="w-2 h-2 rounded-full bg-red-500" />
+                            <div className="p-4 bg-red-50 border border-red-100 rounded-2xl flex items-center gap-3 animate-fade-in">
+                                <div className="w-2 h-2 rounded-full bg-red-500 shrink-0" />
                                 <p className="text-xs font-bold text-red-600">{error}</p>
                             </div>
                         )}
@@ -102,18 +156,12 @@ const Signup = () => {
                     <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Distributed Ledger Verified Registration</span>
                 </div>
             </div>
-<<<<<<< HEAD
-            <p className="absolute bottom-8 text-[10px] font-black text-indigo-500/30 uppercase tracking-[0.2em] italic">Design and Developed by Mohsin,Wasif,Furqan,Arya,Tamanna</p>
-=======
-            <p className="absolute bottom-8 text-[10px] font-black text-indigo-500/30 uppercase tracking-[0.2em] italic">git fetch origin
-                git reset --hard origin/main
-                git clean -fd</p>
->>>>>>> f1f6d611dc567711e8d76c771e8a5525b77bb374
+            <p className="absolute bottom-8 text-[10px] font-black text-indigo-500/30 uppercase tracking-[0.2em] italic">Design and Developed by Mohsin, Wasif, Furqan, Arya, Tamanna</p>
         </div>
     );
 };
 
-const InputField = ({ label, icon, value, onChange, placeholder, type = "text" }) => (
+const InputField = ({ label, icon, value, onChange, placeholder, type = 'text' }) => (
     <div className="space-y-2">
         <label className="text-xs font-bold text-slate-400 uppercase tracking-widest pl-1">{label}</label>
         <div className="relative group">
