@@ -5,6 +5,7 @@ const { authorize } = require('../middleware/roleMiddleware');
 const Case = require('../models/Case');
 const Consent = require('../models/Consent');
 const { formatMedicalData } = require('../services/gemini');
+const { uploadToCloudinary } = require('../services/cloudinary');
 
 // @desc    Process transcript with Gemini & return structured data
 // @route   POST /api/cases/process
@@ -46,13 +47,21 @@ router.post('/', protect, authorize('Doctor'), async (req, res) => {
             return res.status(403).json({ message: 'No valid patient consent found or consent has expired. Please request a new clinical handshake.' });
         }
 
+        let hostedPrescriptionImage = prescriptionImage || '';
+        if (prescriptionImage && prescriptionImage.startsWith('data:image/')) {
+            const cloudResult = await uploadToCloudinary(prescriptionImage, 'docuflux_prescriptions');
+            if (cloudResult?.url) {
+                hostedPrescriptionImage = cloudResult.url;
+            }
+        }
+
         const newCase = await Case.create({
             patientId,
             doctorId: req.user._id,
             transcript,
             structuredData,
             resolutionNotes: resolutionNotes || '',
-            prescriptionImage: prescriptionImage || '',
+            prescriptionImage: hostedPrescriptionImage,
             status: 'Active' // Start as Active so doctor can finalize
         });
 

@@ -54,5 +54,19 @@ app.listen(PORT, () => {
     else if (hasOpenRouter) activeAi = 'OpenRouter Free Gateway';
 
     console.log(`>>> 🤖 AI ENGINE: ${activeAi}`);
+
+    const hasCloudinary = Boolean(
+        process.env.CLOUDINARY_CLOUD_NAME &&
+        process.env.CLOUDINARY_API_KEY &&
+        process.env.CLOUDINARY_API_SECRET &&
+        !process.env.CLOUDINARY_CLOUD_NAME.includes('your_')
+    );
+    const cloudStatus = hasCloudinary
+        ? `Cloudinary CDN Active (cloud: ${process.env.CLOUDINARY_CLOUD_NAME})`
+        : 'Base64 Encrypted Mode (Cloudinary keys pending in .env)';
+    console.log(`>>> ☁️  MEDIA CLOUD: ${cloudStatus}`);
     console.log('--- READY FOR OPERATIONS ---');
 });
+
+module.exports = app;
+

@@ -6,6 +6,7 @@ const { authorize } = require('../middleware/roleMiddleware');
 const MedicalRecord = require('../models/MedicalRecord');
 const Consent = require('../models/Consent');
 const Case = require('../models/Case');
+const { uploadToCloudinary, deleteFromCloudinary } = require('../services/cloudinary');
 
 // @desc    Get all records for logged-in patient
 // @route   GET /api/records
@@ -119,18 +120,31 @@ router.post('/', protect, authorize('Patient'), async (req, res) => {
             return res.status(400).json({ message: 'File too large. Maximum size is 5MB.' });
         }
 
+        let uploadedUrl = null;
+        let publicId = null;
+
+        if (fileData) {
+            const cloudResult = await uploadToCloudinary(fileData, 'docuflux_records');
+            if (cloudResult) {
+                uploadedUrl = cloudResult.url;
+                publicId = cloudResult.publicId;
+            }
+        }
+
         const record = await MedicalRecord.create({
             patientId: req.user._id,
             title,
             category: category || 'Other',
-            fileData,
+            fileData: uploadedUrl || fileData, // Uses Cloudinary CDN URL when active, falls back to base64
+            fileUrl: uploadedUrl,
+            publicId: publicId,
             fileType,
             fileName,
             notes: notes || '',
             recordDate: recordDate ? new Date(recordDate) : new Date(),
         });
 
-        // Return without fileData to keep response light
+        // Return without heavy fileData to keep response light
         const { fileData: _fd, ...recordObj } = record.toObject();
         res.status(201).json(recordObj);
     } catch (error) {
@@ -152,6 +166,9 @@ router.delete('/:id', protect, authorize('Patient'), async (req, res) => {
         });
         if (!record) {
             return res.status(404).json({ message: 'Record not found or not authorized.' });
+        }
+        if (record.publicId) {
+            await deleteFromCloudinary(record.publicId).catch(e => console.error('Cloudinary delete error:', e));
         }
         res.json({ success: true, message: 'Record deleted.' });
     } catch (error) {

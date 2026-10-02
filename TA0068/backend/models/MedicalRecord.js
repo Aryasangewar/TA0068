@@ -17,8 +17,10 @@ const medicalRecordSchema = new mongoose.Schema({
         enum: ['Lab Report', 'Prescription', 'X-Ray', 'MRI', 'Vaccination', 'Doctor Note', 'Insurance', 'Other'],
         default: 'Other',
     },
-    // File stored as base64 (max 5MB enforced on frontend)
+    // File stored as base64 or Cloudinary CDN URL
     fileData: { type: String },
+    fileUrl:  { type: String },   // Cloudinary CDN URL (e.g. https://res.cloudinary.com/...)
+    publicId: { type: String },   // Cloudinary asset public ID
     fileType: { type: String },   // MIME type e.g. "image/jpeg", "application/pdf"
     fileName: { type: String },   // Original filename
 
