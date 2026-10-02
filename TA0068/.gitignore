@@ -4,4 +4,6 @@ docuflux-frontend/node_modules/
 .env
 backend/.env
 dist/
+docuflux-frontend/dist/
 build/
+.vercel

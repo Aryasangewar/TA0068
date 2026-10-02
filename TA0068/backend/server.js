@@ -27,46 +27,73 @@ app.use((req, res, next) => {
 });
 app.use(express.json({ limit: '10mb' })); // Increased limit for base64 prescription images
 
-// Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/consent', require('./routes/consent'));
-app.use('/api/cases', require('./routes/cases'));
-app.use('/api/users', require('./routes/users'));
-app.use('/api/records', require('./routes/records'));
+// Ensure DB connected on each request in serverless
+app.use(async (req, res, next) => {
+    try {
+        await connectDB();
+    } catch (e) {
+        console.error('DB connection error in request:', e);
+    }
+    next();
+});
+
+// Routes - Mount on both /api/* and /* for full Vercel serverless compatibility
+const authRoutes = require('./routes/auth');
+const consentRoutes = require('./routes/consent');
+const caseRoutes = require('./routes/cases');
+const userRoutes = require('./routes/users');
+const recordRoutes = require('./routes/records');
+
+app.use('/api/auth', authRoutes);
+app.use('/auth', authRoutes);
+
+app.use('/api/consent', consentRoutes);
+app.use('/consent', consentRoutes);
+
+app.use('/api/cases', caseRoutes);
+app.use('/cases', caseRoutes);
+
+app.use('/api/users', userRoutes);
+app.use('/users', userRoutes);
+
+app.use('/api/records', recordRoutes);
+app.use('/records', recordRoutes);
 
 const PORT = process.env.PORT || 5055;
 
-app.get('/', (req, res) => {
-    res.send('DocuFlux AI API is running... Version 2.8');
+app.get(['/', '/api'], (req, res) => {
+    res.json({ message: 'DocuFlux AI API is online', version: '2.8', status: 'operational' });
 });
 
-app.listen(PORT, () => {
-    console.log('>>> 🚀 DOCUFLUX BACKEND STARTING <<<');
-    console.log('>>> 🛠️  VERSION: 2.8 (FULL FUNCTIONAL)');
-    console.log(`>>> 🌐 PORT: ${PORT}`);
-    const hasGemini = process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEY.includes('your_');
-    const hasGroq = process.env.GROQ_API_KEY && !process.env.GROQ_API_KEY.includes('your_');
-    const hasOpenRouter = process.env.OPENROUTER_API_KEY && !process.env.OPENROUTER_API_KEY.includes('your_');
-    
-    let activeAi = 'Smart Clinical Fallback Parser (no API key configured)';
-    if (hasGemini) activeAi = 'Google Gemini (Google AI Studio - 100% Free)';
-    else if (hasGroq) activeAi = 'Groq Cloud (Llama 3.3 70B - Free)';
-    else if (hasOpenRouter) activeAi = 'OpenRouter Free Gateway';
+if (!process.env.VERCEL) {
+    app.listen(PORT, () => {
+        console.log('>>> 🚀 DOCUFLUX BACKEND STARTING <<<');
+        console.log('>>> 🛠️  VERSION: 2.8 (FULL FUNCTIONAL)');
+        console.log(`>>> 🌐 PORT: ${PORT}`);
+        const hasGemini = process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEY.includes('your_');
+        const hasGroq = process.env.GROQ_API_KEY && !process.env.GROQ_API_KEY.includes('your_');
+        const hasOpenRouter = process.env.OPENROUTER_API_KEY && !process.env.OPENROUTER_API_KEY.includes('your_');
+        
+        let activeAi = 'Smart Clinical Fallback Parser (no API key configured)';
+        if (hasGemini) activeAi = 'Google Gemini (Google AI Studio - 100% Free)';
+        else if (hasGroq) activeAi = 'Groq Cloud (Llama 3.3 70B - Free)';
+        else if (hasOpenRouter) activeAi = 'OpenRouter Free Gateway';
 
-    console.log(`>>> 🤖 AI ENGINE: ${activeAi}`);
+        console.log(`>>> 🤖 AI ENGINE: ${activeAi}`);
 
-    const hasCloudinary = Boolean(
-        process.env.CLOUDINARY_CLOUD_NAME &&
-        process.env.CLOUDINARY_API_KEY &&
-        process.env.CLOUDINARY_API_SECRET &&
-        !process.env.CLOUDINARY_CLOUD_NAME.includes('your_')
-    );
-    const cloudStatus = hasCloudinary
-        ? `Cloudinary CDN Active (cloud: ${process.env.CLOUDINARY_CLOUD_NAME})`
-        : 'Base64 Encrypted Mode (Cloudinary keys pending in .env)';
-    console.log(`>>> ☁️  MEDIA CLOUD: ${cloudStatus}`);
-    console.log('--- READY FOR OPERATIONS ---');
-});
+        const hasCloudinary = Boolean(
+            process.env.CLOUDINARY_CLOUD_NAME &&
+            process.env.CLOUDINARY_API_KEY &&
+            process.env.CLOUDINARY_API_SECRET &&
+            !process.env.CLOUDINARY_CLOUD_NAME.includes('your_')
+        );
+        const cloudStatus = hasCloudinary
+            ? `Cloudinary CDN Active (cloud: ${process.env.CLOUDINARY_CLOUD_NAME})`
+            : 'Base64 Encrypted Mode (Cloudinary keys pending in .env)';
+        console.log(`>>> ☁️  MEDIA CLOUD: ${cloudStatus}`);
+        console.log('--- READY FOR OPERATIONS ---');
+    });
+}
 
 module.exports = app;
 
