@@ -972,53 +972,109 @@ const CaseDetailModal = ({ caseData: c, onClose, onOpenDossier, onInspectRecordD
                     {c.structuredData ? (
                         <div className="space-y-6">
                             {/* Diagnosis */}
-                            <div className="bg-indigo-50 rounded-3xl p-6 border border-indigo-100">
-                                <p className="text-[10px] font-black text-indigo-400 uppercase tracking-widest mb-2 flex items-center gap-2">
-                                    <Clipboard className="w-3.5 h-3.5" /> Clinical Diagnosis
+                            <div className="bg-indigo-50/80 rounded-3xl p-6 border border-indigo-100">
+                                <p className="text-[10px] font-black text-indigo-500 uppercase tracking-widest mb-1.5 flex items-center gap-2">
+                                    <Clipboard className="w-3.5 h-3.5" /> Primary Clinical Diagnosis (ICD-10)
                                 </p>
-                                <p className="text-xl font-black text-indigo-950 italic">{c.structuredData.diagnosis}</p>
+                                <p className="text-xl font-black text-indigo-950 leading-snug">{c.structuredData.diagnosis}</p>
                             </div>
 
                             {/* Symptoms */}
                             {c.structuredData.symptoms?.length > 0 && (
                                 <div>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Observed Symptoms</p>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2.5">Chief Complaints & Clinical Presentation</p>
                                     <div className="flex flex-wrap gap-2">
                                         {c.structuredData.symptoms.map((s, i) => (
-                                            <span key={i} className="px-3 py-1.5 bg-slate-100 text-slate-700 rounded-xl text-xs font-bold">{s}</span>
+                                            <span key={i} className="px-3 py-1.5 bg-slate-100 text-slate-800 rounded-xl text-xs font-bold border border-slate-200">{s}</span>
                                         ))}
                                     </div>
                                 </div>
                             )}
 
-                            {/* Medicines */}
+                            {/* Prescribed Medications Table */}
                             {c.structuredData.medicines?.length > 0 && (
-                                <div>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                                        <Pill className="w-3.5 h-3.5" /> Prescribed Medications
+                                <div className="space-y-3">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                        <Pill className="w-3.5 h-3.5 text-indigo-600" /> Prescribed Pharmacotherapy Regimen (Rx)
                                     </p>
-                                    <div className="space-y-2">
-                                        {c.structuredData.medicines.map((m, i) => (
-                                            <div key={i} className="flex items-center justify-between bg-white border border-slate-200 rounded-2xl px-5 py-3 shadow-sm">
-                                                <span className="font-bold text-slate-900 text-sm">{m.name}</span>
-                                                <span className="text-xs text-indigo-600 font-bold bg-indigo-50 px-3 py-1 rounded-lg">{m.dosage} · {m.frequency}</span>
+                                    <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-sm">
+                                        <table className="w-full text-left text-xs">
+                                            <thead className="bg-slate-50 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">
+                                                <tr>
+                                                    <th className="px-5 py-3">Medicine & Molecule</th>
+                                                    <th className="px-5 py-3">Therapeutic Strength</th>
+                                                    <th className="px-5 py-3">Schedule</th>
+                                                    <th className="px-5 py-3">Duration</th>
+                                                    <th className="px-5 py-3">Instructions</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody className="divide-y divide-slate-100 font-medium">
+                                                {c.structuredData.medicines.map((m, i) => (
+                                                    <tr key={i} className="hover:bg-slate-50/50">
+                                                        <td className="px-5 py-3 text-slate-900 font-bold">{m.name}</td>
+                                                        <td className="px-5 py-3">
+                                                            <span className="px-2 py-0.5 bg-indigo-50 text-indigo-700 rounded-md font-bold font-mono">
+                                                                {m.dosage}
+                                                            </span>
+                                                        </td>
+                                                        <td className="px-5 py-3 text-slate-700 font-semibold">{m.frequency}</td>
+                                                        <td className="px-5 py-3 text-slate-600">{m.duration || 'As directed'}</td>
+                                                        <td className="px-5 py-3 text-slate-500 italic max-w-xs">{m.instructions || 'As advised with water'}</td>
+                                                    </tr>
+                                                ))}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Diagnostic Investigations */}
+                            {c.structuredData.investigations?.length > 0 && (
+                                <div className="space-y-3">
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                                        <Activity className="w-3.5 h-3.5 text-teal-600" /> Diagnostic Investigations & Laboratory Orders
+                                    </p>
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                        {c.structuredData.investigations.map((test, i) => (
+                                            <div key={i} className="p-3 bg-teal-50/50 border border-teal-100 rounded-xl text-xs font-bold text-teal-900 flex items-center gap-2">
+                                                <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" />
+                                                <span>{test}</span>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
                             )}
 
-                            {/* Advice */}
-                            {c.structuredData.advice && (
-                                <div>
-                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
-                                        <MessageSquare className="w-3.5 h-3.5" /> Lifestyle & Treatment Advisory
+                            {/* Emergency Red Flags */}
+                            {c.structuredData.redFlags && (
+                                <div className="bg-rose-50/70 border border-rose-200 rounded-2xl p-5 space-y-1.5">
+                                    <p className="text-[10px] font-black text-rose-700 uppercase tracking-widest flex items-center gap-2">
+                                        <AlertTriangle className="w-4 h-4 text-rose-600 shrink-0" /> Critical Emergency Red Flags & Warning Signs
                                     </p>
-                                    <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100">
-                                        <p className="text-slate-700 font-medium italic text-sm leading-relaxed">{c.structuredData.advice}</p>
-                                    </div>
+                                    <p className="text-xs text-rose-950 font-semibold leading-relaxed">{c.structuredData.redFlags}</p>
                                 </div>
                             )}
+
+                            {/* Advice & Follow-up */}
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                {c.structuredData.advice && (
+                                    <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100 space-y-1.5">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                            <HeartPulse className="w-3.5 h-3.5 text-blue-600" /> Dietary & Supportive Care
+                                        </p>
+                                        <p className="text-slate-700 font-medium text-xs leading-relaxed">{c.structuredData.advice}</p>
+                                    </div>
+                                )}
+
+                                {c.structuredData.followUp && (
+                                    <div className="bg-slate-50 rounded-2xl p-5 border border-slate-100 space-y-1.5">
+                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                            <Calendar className="w-3.5 h-3.5 text-indigo-600" /> Follow-Up Timeline
+                                        </p>
+                                        <p className="text-slate-800 font-bold text-xs leading-relaxed">{c.structuredData.followUp}</p>
+                                    </div>
+                                )}
+                            </div>
 
                             {/* Resolution Notes */}
                             {c.resolutionNotes && c.resolutionNotes !== 'RESTRICTED' && (

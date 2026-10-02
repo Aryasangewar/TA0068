@@ -11,9 +11,13 @@ const caseSchema = new mongoose.Schema({
             name: String,
             dosage: String,
             frequency: String,
-            duration: String
+            duration: String,
+            instructions: String
         }],
-        advice: String
+        advice: String,
+        investigations: [String],
+        redFlags: String,
+        followUp: String
     },
     resolutionNotes: { type: String },
     prescriptionImage: { type: String }, // Base64 String

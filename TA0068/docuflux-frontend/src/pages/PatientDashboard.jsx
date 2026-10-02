@@ -1566,13 +1566,14 @@ const CaseCard = ({ c, isExpanded, onToggle }) => (
 
                         {/* Prescription Medicines Table */}
                         <div className="space-y-4">
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Prescribed Medications</p>
+                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Prescribed Medications (Rx)</p>
                             <div className="bg-white rounded-2xl border border-slate-200 overflow-hidden shadow-sm">
                                 <table className="w-full text-left text-xs">
                                     <thead className="bg-slate-50 text-slate-400 font-bold uppercase tracking-wider border-b border-slate-200">
                                         <tr>
                                             <th className="px-5 py-3">Medicine</th>
-                                            <th className="px-5 py-3">Dosage & Frequency</th>
+                                            <th className="px-5 py-3">Strength & Timing</th>
+                                            <th className="px-5 py-3">Duration & Instructions</th>
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-100 font-medium">
@@ -1580,12 +1581,19 @@ const CaseCard = ({ c, isExpanded, onToggle }) => (
                                             c.structuredData.medicines.map((m, i) => (
                                                 <tr key={i} className="hover:bg-slate-50/50">
                                                     <td className="px-5 py-3.5 text-slate-900 font-bold">{m.name}</td>
-                                                    <td className="px-5 py-3.5 text-indigo-600">{m.dosage} • {m.frequency}</td>
+                                                    <td className="px-5 py-3.5">
+                                                        <span className="font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md">{m.dosage}</span>
+                                                        <span className="text-slate-500 block text-[11px] mt-0.5">{m.frequency}</span>
+                                                    </td>
+                                                    <td className="px-5 py-3.5 text-slate-600">
+                                                        <span className="font-semibold text-slate-800">{m.duration || 'As directed'}</span>
+                                                        {m.instructions && <p className="text-[11px] text-slate-500 italic mt-0.5">{m.instructions}</p>}
+                                                    </td>
                                                 </tr>
                                             ))
                                         ) : (
                                             <tr>
-                                                <td colSpan="2" className="px-5 py-3.5 text-slate-400 italic text-center">
+                                                <td colSpan="3" className="px-5 py-3.5 text-slate-400 italic text-center">
                                                     Restricted or none prescribed
                                                 </td>
                                             </tr>
@@ -1596,13 +1604,59 @@ const CaseCard = ({ c, isExpanded, onToggle }) => (
                         </div>
                     </div>
 
-                    {/* Advice & Prescription Image */}
+                    {/* Diagnostic Lab Orders & Critical Red Flags */}
+                    {((c.structuredData.investigations && c.structuredData.investigations.length > 0) || c.structuredData.redFlags) && (
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 pt-4 border-t border-slate-100">
+                            {/* Lab Orders */}
+                            {c.structuredData.investigations?.length > 0 && (
+                                <div className="space-y-3">
+                                    <p className="text-xs font-bold text-slate-400 uppercase tracking-widest flex items-center gap-1.5">
+                                        <Activity className="w-3.5 h-3.5 text-teal-600" /> Recommended Diagnostic Lab Tests
+                                    </p>
+                                    <div className="space-y-2">
+                                        {c.structuredData.investigations.map((test, i) => (
+                                            <div key={i} className="p-3 bg-teal-50/60 border border-teal-100 rounded-xl text-xs font-bold text-teal-900 flex items-center gap-2">
+                                                <CheckCircle2 className="w-4 h-4 text-teal-600 shrink-0" />
+                                                <span>{test}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Emergency Red Flags */}
+                            {c.structuredData.redFlags && (
+                                <div className="space-y-3">
+                                    <p className="text-xs font-bold text-rose-600 uppercase tracking-widest flex items-center gap-1.5">
+                                        <AlertTriangle className="w-3.5 h-3.5 text-rose-600" /> Critical Emergency Warning Signs
+                                    </p>
+                                    <div className="p-4 bg-rose-50 border border-rose-200 rounded-2xl text-xs font-semibold text-rose-950 leading-relaxed">
+                                        {c.structuredData.redFlags}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Advice, Follow-Up & Prescription Image */}
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 pt-6 border-t border-slate-100">
-                        <div className="lg:col-span-2 space-y-3">
-                            <p className="text-xs font-bold text-slate-400 uppercase tracking-widest">Doctor's Lifestyle Advisory</p>
-                            <div className="p-6 bg-indigo-50/40 rounded-2xl text-slate-700 italic text-sm leading-relaxed border border-indigo-100/60">
-                                {c.structuredData.advice === 'RESTRICTED' ? '🔒 Access restricted by patient settings.' : (c.structuredData.advice || 'No advice recorded.')}
+                        <div className="lg:col-span-2 space-y-4">
+                            <div>
+                                <p className="text-xs font-bold text-slate-400 uppercase tracking-widest mb-2">Doctor's Lifestyle & Supportive Advisory</p>
+                                <div className="p-5 bg-indigo-50/40 rounded-2xl text-slate-700 italic text-sm leading-relaxed border border-indigo-100/60">
+                                    {c.structuredData.advice === 'RESTRICTED' ? '🔒 Access restricted by patient settings.' : (c.structuredData.advice || 'No advice recorded.')}
+                                </div>
                             </div>
+
+                            {c.structuredData.followUp && (
+                                <div className="p-4 bg-slate-50 rounded-2xl border border-slate-200/80 flex items-center gap-3">
+                                    <Calendar className="w-5 h-5 text-indigo-600 shrink-0" />
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase text-slate-400 tracking-wider">Next Clinical Follow-Up</p>
+                                        <p className="text-xs font-bold text-slate-800">{c.structuredData.followUp}</p>
+                                    </div>
+                                </div>
+                            )}
                         </div>
 
                         <div>

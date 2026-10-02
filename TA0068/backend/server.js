@@ -44,7 +44,15 @@ app.listen(PORT, () => {
     console.log('>>> 🚀 DOCUFLUX BACKEND STARTING <<<');
     console.log('>>> 🛠️  VERSION: 2.8 (FULL FUNCTIONAL)');
     console.log(`>>> 🌐 PORT: ${PORT}`);
-    const hasKey = process.env.OPENROUTER_API_KEY && process.env.OPENROUTER_API_KEY !== 'your_openrouter_api_key_here';
-    console.log(`>>> 🤖 AI ENGINE: ${hasKey ? 'OpenRouter (Gemini 2.0)' : 'Smart Fallback Parser (no API key)'}`);
+    const hasGemini = process.env.GEMINI_API_KEY && !process.env.GEMINI_API_KEY.includes('your_');
+    const hasGroq = process.env.GROQ_API_KEY && !process.env.GROQ_API_KEY.includes('your_');
+    const hasOpenRouter = process.env.OPENROUTER_API_KEY && !process.env.OPENROUTER_API_KEY.includes('your_');
+    
+    let activeAi = 'Smart Clinical Fallback Parser (no API key configured)';
+    if (hasGemini) activeAi = 'Google Gemini (Google AI Studio - 100% Free)';
+    else if (hasGroq) activeAi = 'Groq Cloud (Llama 3.3 70B - Free)';
+    else if (hasOpenRouter) activeAi = 'OpenRouter Free Gateway';
+
+    console.log(`>>> 🤖 AI ENGINE: ${activeAi}`);
     console.log('--- READY FOR OPERATIONS ---');
 });
